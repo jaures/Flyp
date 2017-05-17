@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+	<title> Flyp: The Flip-Flop Game </title>
+
+</head>
+
+<body>
+	<center>
+		<canvas id="gameGrid" width="400" height="360" style="border:1px solid #d3e3e3;">
+			You browser does not support the HTML5 canvas tag.
+		</canvas>
+		
+		<p>
+			<button onclick="flip();">
+				Flip
+			</button>
+			<button onclick="flop();">
+				Flop
+			</button>
+		</p>
+    
+	</center>
+
+	<hr></hr>
+  
+	<p id="score">Score: 0</p>
+
+	<script>
+  
+		document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+		document.body.scroll = "no"; // ie only
+		
+		var c 	= document.getElementById('gameGrid');
+		var ctx = c.getContext('2d');
+		
+		// flipper => [x,y,length,angle];
+		var flipper 	= [c.width/2, c.height/2, 20, 0];
+		var dTheta 	= Math.PI/64;
+		var score 	= 0;
+		const speed = Math.PI/64;
+	
+		var pts_size 	= 2;
+		var pts 	= [ Math.floor(Math.random() * (c.width - 2 * pts_size) + pts_size),
+					Math.floor(Math.random() * (c.height - 2 * pts_size) + pts_size) ];
+				
+		
+		setInterval(update, 15);
+		
+		window.addEventListener('keypress', keyHandler);
+		function update()
+		{
+		//https://careers.vmware.com/job/palo-alto/intern-mts-launch-undergrad-intern-program/1567/4445343
+		
+			ctx.clearRect(0, 0, c.width, c.height);
+			
+			ctx.beginPath();
+			ctx.arc(pts[0], pts[1], pts_size, 0, 2 * Math.PI);
+			ctx.stroke();
+			ctx.beginPath();
+			ctx.moveTo(flipper[0],flipper[1]);
+			ctx.lineTo(flipper[0] + flipper[2] * Math.cos(flipper[3]), 
+					flipper[1] + flipper[2] * Math.sin(flipper[3]));
+			ctx.stroke();
+			
+			flipper[3] += dTheta;
+			flipper[3] %= 2*Math.PI;
+			
+			checkCollision();
+			
+			if(ctx.isPointInPath(pts[0], pts[1]))
+			{
+				alert("COLLIDED");
+			}			
+		}
+		function checkCollision()
+		{
+			x2 = flipper[0] + flipper[2] * Math.cos(flipper[3]); 
+			y2 = flipper[1] + flipper[2] * Math.sin(flipper[3]);
+			
+			//Check Collision with Walls
+			if ( x2 <= 0 || x2 >= c.width-1 || y2 <= 0 || y2 >= c.height -1)
+			{
+				alert("Game Over");
+				flipper = [c.width/2, c.height/2, 20, 0];
+				score = 0;
+			}
+			
+			// Check Collision with PTS
+			if ( pts[0] <= Math.max(flipper[0], x2) && pts[0] >= Math.min(flipper[0],x2) &&
+				pts[1] <= Math.max(flipper[1], y2) && pts[1] >= Math.min(flipper[1],y2))
+			{
+				// Update Variables
+				score += 10;
+				flipper[2] *= 1.2;
+				dTheta *= 0.95;
+				
+				pts = [ Math.floor(Math.random() * (c.width - 2 * pts_size) + pts_size),
+					Math.floor(Math.random() * (c.height - 2 * pts_size) + pts_size) ];
+				
+				// Update HTML
+				var s = document.getElementById("score").innerHTML = "Score: " + score;		
+			}
+			
+			
+		}
+		
+		function keyHandler(e)
+		{
+			var keyCode = e.keyCode;
+			if(keyCode == 32)
+			{
+				if(e.shiftKey)
+				{
+					flop();
+				}
+				else
+				{
+					flip();
+				}
+			}
+			else if(keyCode == 113)
+			{
+				flipper[2] = Math.max(20, flipper[2]*0.9);
+				dTheta = Math.min(dTheta*1.25, Math.PI*flipper[2]/(20*32));
+			}
+		}
+		
+		function flip()
+		{
+			dTheta *= -1;
+		}
+		function flop()
+		{
+			flipper[0] += flipper[2] * Math.cos(flipper[3]);
+			flipper[1] += flipper[2] * Math.sin(flipper[3]);
+			
+			flipper[2] *= -1;
+			
+		}
+		
+	</script>
+
+</body>
+
+
+</html>
