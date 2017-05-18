@@ -10,7 +10,8 @@
 
 <body>
 	<center>
-		<canvas id="gameGrid" width="400" height="360" style="border:1px solid #d3e3e3;">
+
+		<canvas id="gameGrid" width="400" height="360" style="border:16px solid #d3e3e3;">
 			You browser does not support the HTML5 canvas tag.
 		</canvas>
 		
@@ -28,6 +29,8 @@
 	<hr></hr>
   
 	<p id="score">Score: 0</p>
+	<p id="length">Length: 1</p>
+	<p id="speed">Speed: 1</p>
 
 	<script>
   
@@ -41,7 +44,8 @@
 		var flipper 	= [c.width/2, c.height/2, 20, 0];
 		var dTheta 	= Math.PI/64;
 		var score 	= 0;
-		const speed = Math.PI/64;
+		var length	= 1;
+		var speed 	= 1;
 	
 		var pts_size 	= 2;
 		var pts 	= [ Math.floor(Math.random() * (c.width - 2 * pts_size) + pts_size),
@@ -51,6 +55,7 @@
 		setInterval(update, 15);
 		
 		window.addEventListener('keypress', keyHandler);
+
 		function update()
 		{
 		//https://careers.vmware.com/job/palo-alto/intern-mts-launch-undergrad-intern-program/1567/4445343
@@ -76,6 +81,7 @@
 				alert("COLLIDED");
 			}			
 		}
+
 		function checkCollision()
 		{
 			x2 = flipper[0] + flipper[2] * Math.cos(flipper[3]); 
@@ -87,6 +93,13 @@
 				alert("Game Over");
 				flipper = [c.width/2, c.height/2, 20, 0];
 				score = 0;
+				length = 1;
+				speed = 1;
+						
+				// Update HTML
+				document.getElementById("score").innerHTML = "Score: " + score;		
+				document.getElementById("length").innerHTML = "Length: " + length;		
+				document.getElementById("speed").innerHTML = "Speed: " + speed;		
 			}
 			
 			// Check Collision with PTS
@@ -95,14 +108,18 @@
 			{
 				// Update Variables
 				score += 10;
-				flipper[2] *= 1.2;
-				dTheta *= 0.95;
+				
+				flipper[2] += (-1 + 2*(flipper[2] > 0)) * (Math.pow(2,1 + Math.floor(1+Math.log10(Math.abs(flipper[2]))/4)));
+				
+				dTheta *=0.95;
 				
 				pts = [ Math.floor(Math.random() * (c.width - 2 * pts_size) + pts_size),
 					Math.floor(Math.random() * (c.height - 2 * pts_size) + pts_size) ];
 				
 				// Update HTML
-				var s = document.getElementById("score").innerHTML = "Score: " + score;		
+				document.getElementById("score").innerHTML = "Score: " + score;		
+				document.getElementById("length").innerHTML = "Length: " + length;		
+				document.getElementById("speed").innerHTML = "Speed: " + speed;		
 			}
 			
 			
@@ -124,8 +141,11 @@
 			}
 			else if(keyCode == 113)
 			{
-				flipper[2] = Math.max(20, flipper[2]*0.9);
-				dTheta = Math.min(dTheta*1.25, Math.PI*flipper[2]/(20*32));
+				if(Math.abs( dTheta) < Math.abs(  Math.PI*flipper[2]/(20*48)) && Math.abs(flipper[2]) > 16)
+				{
+					flipper[2] -= (-1 + 2*(flipper[2] > 0 )) * (Math.pow(2,1+Math.floor(1+Math.log10(Math.abs(flipper[2]))/4)));
+					dTheta = (-1 + 2*(dTheta > 0)) * Math.min(Math.abs(dTheta*1.19), Math.abs(Math.PI*flipper[2]/(20*32)));
+				}
 			}
 		}
 		
