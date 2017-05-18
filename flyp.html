@@ -12,7 +12,7 @@
 <body>
 	<center>
 
-		<canvas id="gameGrid" width="400" height="360" style="border:16px solid #d3e3e3;>
+		<canvas id="gameGrid" width="400" height="360" style="border:16px solid #d3e3e3;" onclick="tapHandler();" ontouchend="tapHandler();">
 			You browser does not support the HTML5 canvas tag.
 		</canvas>
 		
@@ -27,7 +27,7 @@
     
 	</center>
 
-	<hr></hr>
+	<hr> </hr>
   
 	<p id="score">Score: 0</p>
 	<p id="length">Length: 1</p>
@@ -40,6 +40,8 @@
 		
 		var c 	= document.getElementById('gameGrid');
 		var ctx = c.getContext('2d');
+		var tapped = false;
+		var dbltapped = false;
 		
 		// flipper => [x,y,length,angle];
 		var flipper 	= [c.width/2, c.height/2, 20, 0];
@@ -56,9 +58,38 @@
 		setInterval(update, 15);
 		
 		window.addEventListener('keypress', keyHandler);
-		window.addEventListener('tap', flop());
-		window.addEventListener('dbltap', flip());
+		//window.addEventListener('touch', flop(), false);
+		//window.addEventListener('dbltap', flip(). false);
 
+		function tapHandler(event)
+		{
+			event.preventDefault();
+			dbltapped ^= tapped;
+			tapped |= 1;
+			
+			setTimeout(dbltap(), 300);
+			setTimeout(resetTaps(), 400);
+		}
+				
+		function dbltap()
+		{
+			if (dbltapped && tapped)
+			{
+				flip();
+			}
+			else if (tapped)
+			{
+				flop();
+			}
+			tapped = false;
+			dbltapped = false;
+		}
+		
+		function resetTaps()
+		{
+			tapped = false;
+			dbltapped = false;
+		}
 		
 		function update()
 		{
