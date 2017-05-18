@@ -56,8 +56,8 @@
 		setInterval(update, 15);
 		
 		window.addEventListener('keypress', keyHandler);
-		c.addEventListener('tap', flop());
-		c.addEventListener('dbltap', flip());
+		window.addEventListener('tap', flop());
+		window.addEventListener('dbltap', flip());
 
 		
 		function update()
