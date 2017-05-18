@@ -7,32 +7,68 @@
 	<title> Flyp: The Flip-Flop Game </title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
+	<style>
+		
+		ul
+		{
+			overflow: 		hidden;
+			list-style-type: 	none;
+			margin: 		0;
+			position:		fixed;
+			bottom:			0;
+			width:			100%;
+			padding: 		0;
+			background-color:	#333;
+		}
+
+		li
+		{
+			float: left;
+			width:			25%;
+		}
+
+		li a
+		{	
+			display:		block;
+			color:			white;
+			text-align: 		center;
+			padding:		14px 16px;
+			text-decoration:	none;
+			background-color:	#7996c0
+		}
+
+	</style>
+	
 </head>
 
 <body>
+	<h1> <center style:"font-weight: bold;">FLYP</center></h1>
+	<p>
+		<div id="score">Score: 0</div>
+		<div id="length">Length: 1</div>
+		<div id="speed">Speed: 1</div>
+	</p>
+
+	<hr> </hr>
+
 	<center>
 
-		<canvas id="gameGrid" width="400" height="360" style="border:16px solid #d3e3e3;" onclick="tapHandler();" ontouchend="tapHandler();">
+		<canvas id="gameGrid" width="400" height="360" style="border:16px solid #d3e3e3;">
 			You browser does not support the HTML5 canvas tag.
 		</canvas>
 		
-		<p>
-			<button onclick="flip();">
-				Flip
-			</button>
-			<button onclick="flop();">
-				Flop
-			</button>
-		</p>
-    
-	</center>
+  	</center> 
 
-	<hr> </hr>
+	<hr></hr>
+
+	<ul>
+		<li><a href="#" id="flip" onclick="flip();">FLIP</a></li>
+		<li><a href="#" id="boost" onclick="boost();">BOOST</a></li>
+		<li><a href="#" id="pause">PAUSE</a></li>
+		<li><a href="#" id="flop" onclick="flop();">FLOP</a></li>
+	</ul>
+
   
-	<p id="score">Score: 0</p>
-	<p id="length">Length: 1</p>
-	<p id="speed">Speed: 1</p>
-
 	<script>
   
 		document.documentElement.style.overflow = 'hidden';  // firefox, chrome
@@ -58,38 +94,17 @@
 		setInterval(update, 15);
 		
 		window.addEventListener('keypress', keyHandler);
-		//window.addEventListener('touch', flop(), false);
-		//window.addEventListener('dbltap', flip(). false);
 
 		function tapHandler(event)
 		{
-			event.preventDefault();
+			//event.preventDefault();
 			dbltapped ^= tapped;
 			tapped |= 1;
 			
-			setTimeout(dbltap(), 300);
-			setTimeout(resetTaps(), 400);
+			setTimeout(dbltap(), 150);
+			setTimeout(resetTaps(), 200);
 		}
 				
-		function dbltap()
-		{
-			if (dbltapped && tapped)
-			{
-				flip();
-			}
-			else if (tapped)
-			{
-				flop();
-			}
-			tapped = false;
-			dbltapped = false;
-		}
-		
-		function resetTaps()
-		{
-			tapped = false;
-			dbltapped = false;
-		}
 		
 		function update()
 		{
@@ -141,12 +156,15 @@
 			if ( pts[0] <= Math.max(flipper[0], x2) && pts[0] >= Math.min(flipper[0],x2) &&
 				pts[1] <= Math.max(flipper[1], y2) && pts[1] >= Math.min(flipper[1],y2))
 			{
-				// Update Variables
-				score += 10;
-				
+				// Maths Yo! (update bar stats)	
 				flipper[2] += (-1 + 2*(flipper[2] > 0)) * (Math.pow(2,1 + Math.floor(1+Math.log10(Math.abs(flipper[2]))/4)));
 				
 				dTheta *=0.95;
+				
+				// Update Variables
+				score += 10;
+				length = Math.abs(flipper[2]/2);
+				speed = Math.abs(Math.floor(dTheta / (Math.PI/64000)) / 1000);
 				
 				pts = [ Math.floor(Math.random() * (c.width - 2 * pts_size) + pts_size),
 					Math.floor(Math.random() * (c.height - 2 * pts_size) + pts_size) ];
@@ -176,14 +194,31 @@
 			}
 			else if(keyCode == 113)
 			{
-				if(Math.abs( dTheta) < Math.abs(  Math.PI*flipper[2]/(20*48)) && Math.abs(flipper[2]) > 16)
-				{
-					flipper[2] -= (-1 + 2*(flipper[2] > 0 )) * (Math.pow(2,1+Math.floor(1+Math.log10(Math.abs(flipper[2]))/4)));
-					dTheta = (-1 + 2*(dTheta > 0)) * Math.min(Math.abs(dTheta*1.19), Math.abs(Math.PI*flipper[2]/(20*32)));
-				}
 			}
 		}
-		
+	
+		function boost()
+		{
+			if(Math.abs( dTheta) < Math.abs(  Math.PI*flipper[2]/(20*48)) && Math.abs(flipper[2]) > 16)
+			{
+				flipper[2] -= (-1 + 2*(flipper[2] > 0 )) 
+					* (Math.pow(2,1+Math.floor(1+Math.log10(Math.abs(flipper[2]))/4)));
+				
+				dTheta = (-1 + 2*(dTheta > 0)) 
+					* Math.min(Math.abs(dTheta*1.19), Math.abs(Math.PI*flipper[2]/(20*32)));
+
+				
+				// Update Variables
+				length = Math.abs(flipper[2]/2);
+				speed = Math.abs(Math.floor(dTheta / (Math.PI/64000)) / 1000);
+				
+				// Update HTML
+				document.getElementById("score").innerHTML = "Score: " + score;		
+				document.getElementById("length").innerHTML = "Length: " + length;		
+				document.getElementById("speed").innerHTML = "Speed: " + speed;		
+			}
+		}
+			
 		function flip()
 		{
 			dTheta *= -1;
