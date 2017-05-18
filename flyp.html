@@ -49,17 +49,17 @@
 		<div id="speed">Speed: 1</div>
 	</p>
 
-	<hr> </hr>
+	<!hr> </hr>
 
 	<center>
 
-		<canvas id="gameGrid" width="360px" height="360px" style="border:16px solid #d3e3e3;">
+		<canvas id="gameGrid" width="240px" height="240px" style="border:16px solid #d3e3e3;">
 			You browser does not support the HTML5 canvas tag.
 		</canvas>
 		
   	</center> 
 
-	<hr></hr>
+	<!hr></hr>
 
 	<ul>
 		<li><a href="#" id="flip" onclick="flip();">FLIP</a></li>
@@ -80,12 +80,8 @@
 		var dbltapped = false;
 		
 		// flipper => [x,y,length,angle];
-		var flipper 	= [c.width/2, c.height/2, 20, 0];
-		var dTheta 	= Math.PI/64;
-		var score 	= 0;
-		var length	= 1;
-		var speed 	= 1;
-	
+		gameReset();
+			
 		var pts_size 	= 2;
 		var pts 	= [ Math.floor(Math.random() * (c.width - 2 * pts_size) + pts_size),
 					Math.floor(Math.random() * (c.height - 2 * pts_size) + pts_size) ];
@@ -95,21 +91,9 @@
 		
 		window.addEventListener('keypress', keyHandler);
 
-		function tapHandler(event)
-		{
-			//event.preventDefault();
-			dbltapped ^= tapped;
-			tapped |= 1;
-			
-			setTimeout(dbltap(), 150);
-			setTimeout(resetTaps(), 200);
-		}
-				
 		
 		function update()
 		{
-		//https://careers.vmware.com/job/palo-alto/intern-mts-launch-undergrad-intern-program/1567/4445343
-		
 			ctx.clearRect(0, 0, c.width, c.height);
 			
 			ctx.beginPath();
@@ -140,16 +124,8 @@
 			//Check Collision with Walls
 			if ( x2 <= 0 || x2 >= c.width-1 || y2 <= 0 || y2 >= c.height -1)
 			{
-				alert("Game Over");
-				flipper = [c.width/2, c.height/2, 20, 0];
-				score = 0;
-				length = 1;
-				speed = 1;
-						
-				// Update HTML
-				document.getElementById("score").innerHTML = "Score: " + score;		
-				document.getElementById("length").innerHTML = "Length: " + length;		
-				document.getElementById("speed").innerHTML = "Speed: " + speed;		
+				alert("Game Over\nFinal Score: "+score);
+				gameReset();
 			}
 			
 			// Check Collision with PTS
@@ -177,6 +153,22 @@
 			
 			
 		}
+
+		function gameReset()
+		{
+			flipper = [c.width/2, c.height/2, 20, 0];
+			score = 0;
+			length = 10;
+			dTheta = Math.PI/64;
+			speed = 1;
+			
+					
+			// Update HTML
+			document.getElementById("score").innerHTML = "Score: " + score;		
+			document.getElementById("length").innerHTML = "Length: " + length;		
+			document.getElementById("speed").innerHTML = "Speed: " + speed;		
+		}
+		
 		
 		function keyHandler(e)
 		{
