@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+	<title> Flyp: The Flip-Flop Game </title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+	<style>
+		
+		ul
+		{
+			overflow: 		hidden;
+			list-style-type: 	none;
+			margin: 		0;
+			position:		fixed;
+			bottom:			0;
+			width:			100%;
+			padding: 		0;
+			background-color:	#333;
+		}
+
+		li
+		{
+			float: left;
+			width:			25%;
+		}
+
+		li a
+		{	
+			display:		block;
+			color:			white;
+			text-align: 		center;
+			padding:		14px 16px;
+			text-decoration:	none;
+			background-color:	#7996c0
+		}
+
+	</style>
+	
+</head>
+
+<body>
+	<h1> <center style:"font-weight: bold;">FLYP</center></h1>
+
+	<hr></hr>		
+
+	<p>
+		<div id="score">Score: 0</div>
+		<div id="length">Length: 1</div>
+		<div id="speed">Speed: 1</div>
+	</p>
+
+	<!hr> </hr>
+
+	<center>
+
+		<canvas id="gameGrid" width="280px" height="280px" style="border:16px solid #d3e3e3;">
+			You browser does not support the HTML5 canvas tag.
+		</canvas>
+		
+  	</center> 
+
+	<!hr></hr>
+
+	<ul>
+		<li><a href="#" id="flip" onclick="flip();">FLIP</a></li>
+		<li><a href="#" id="boost" onclick="boost();">BOOST</a></li>
+		<li><a href="#" id="pause" onclick="pause()">PAUSE</a></li>
+		<li><a href="#" id="flop" onclick="flop();">FLOP</a></li>
+	</ul>
+
+  
+	<script>
+
+		// CONSTANT VARIABLES
+
+		const SPEED_UNIT	= Math.PI/64;
+		const LENGTH_UNIT	= 2;
+		const BALL_RADIUS	= 2;	
+		const SPEED_LENGTH 	= 0.75;
+
+		// END CONSTANT VARIABLES
+		
+		// Init Relavent Game objects
+		var COLORS	= ['#111'];
+		var c		= document.getElementById('gameGrid');
+		var ctx			= c.getContext('2d');
+		
+		// Global Game World Variables
+		var gameWorld = {};
+
+		// Init Game World Properties
+		initFlipper();
+		initBalls();
+		gameWorld.obsticals	= [];
+		gameWorld.paused 	= false;	
+		// Set up Update on Timer
+		setInterval(update, 15);
+
+		// Set Key Bindings For desktop
+		window.addEventListener('keypress', keyHandler);
+	
+
+
+	
+		// Handles Keybindings for Desktop
+		function keyHandler(e)
+		{
+			var keyCode = e.keyCode;
+			if(e.keyCode == 32)
+			{
+				if(e.shiftKey)
+				{
+					// <space> key
+					flop();
+				}
+				else
+				{
+					// <shift> + <space> key
+					flip();
+				}
+			}
+			else if(e.keyCode == 113)
+			{
+				// <q> key
+				boost();
+			}
+		}
+
+		// Update HTML
+		function updateHTML()
+		{	
+			// Update HTML
+			document.getElementById("score").innerHTML = "Score: " + 
+				gameWorld.flipper.score;
+	
+			document.getElementById("length").innerHTML = "Length: " + 
+				Math.abs(gameWorld.flipper.length);
+					
+			document.getElementById("speed").innerHTML = "Speed: " + 
+				Math.abs(gameWorld.flipper.velocity.toFixed(3));		
+				
+		}			
+
+		// Makes the Flipper reverse its Direction of Rotation
+		function flip()
+		{
+			gameWorld.flipper.velocity *= -1;
+			
+			updateHTML();
+		}
+
+		// Makes the Flipper switch its Axis of Rotation
+		function flop()
+		{
+			gameWorld.flipper.x += gameWorld.flipper.length * Math.cos(gameWorld.flipper.direction);
+			gameWorld.flipper.y += gameWorld.flipper.length * Math.sin(gameWorld.flipper.direction);
+			
+			gameWorld.flipper.length *= -1;
+		
+			updateHTML();
+		}
+		
+		// Increases the Flippers Speed at the cost of its Length
+		function boost()
+		{
+			// Check for Boost conditions
+			if ( (Math.abs(gameWorld.flipper.velocity) < Math.abs(gameWorld.flipper.length) * SPEED_LENGTH)
+				&& ( Math.abs(gameWorld.flipper.length) > 16) )
+			{
+				// Decrease the Length
+				gameWorld.flipper.length -= Math.sign(gameWorld.flipper.length) *
+								(Math.pow(2, 1 + Math.floor( 1 +
+								Math.log10(Math.abs(gameWorld.flipper.length))/4)));
+
+				// Increase the Speed
+				gameWorld.flipper.velocity = Math.sign(gameWorld.flipper.velocity) *
+								Math.min(Math.abs(gameWorld.flipper.velocity * 1.19),
+									Math.abs(gameWorld.flipper.length / 6));
+
+				updateHTML();	
+			} 	
+			
+		}
+		
+		// Toggle Pausing of the Game
+		function pause()
+		{
+			gameWorld.paused ^= 1;
+		}
+		
+		// Initialize the Game
+		function initGame()
+		{
+			
+			// Init Game World Properties
+			initFlipper();
+			initBalls();
+			gameWorld.obsticals	= [];
+			
+		}
+		
+		// Initialize or Resets the flipper to default values
+		function initFlipper()
+		{
+			gameWorld.flipper = {
+						'x': c.width/2, 
+						'y': c.height/2, 
+						'length': 10,
+						'direction': 0, 
+						'velocity': 1, 
+						'score': 0	
+						};
+		}
+		
+		// Initialize or Resets the Balls
+		function initBalls()
+		{
+			gameWorld.balls = { 0:	{'x': Math.random() * (c.width - 16 * BALL_RADIUS) + 16 * BALL_RADIUS,
+						'y': Math.random() * (c.height - 16 * BALL_RADIUS) + 16 * BALL_RADIUS,
+						'r': BALL_RADIUS, 
+						'dur': 3000, 
+						'spawnRate': true}
+				};
+		}		
+
+
+		// Creates a new Ball of a specified color and duration
+		function newBall(color = 0, duration = 3000, reset = false, rate=0)
+		{
+			gameWorld.balls[color] = {'x': Math.random() * (c.width - 16 * BALL_RADIUS) + 16 * BALL_RADIUS,
+						'y': Math.random() * (c.width - 16 * BALL_RADIUS) + 16 * BALL_RADIUS,
+						'r': BALL_RADIUS, 
+						'dur': duration,
+						'spawnRate': rate};
+		}
+		
+		
+		// Check to make sure all the balls are stil alive, and if not,
+		//	spawn a new ball		
+		function checkBalls()
+		{
+			// Check all the Balls durations and replace if duration is up
+			for( b in gameWorld.balls)
+			{
+				if (gameWorld.balls[b].dur)
+				{
+					// If the Ball is still alive, decriment its duration by 1
+					gameWorld.balls[b].dur -= 1;
+				}
+				else
+				{
+					// Otherwise replace with a new ball of same color
+					if (gameWorld.balls[b].spawnRate > Math.random())
+					{
+						initBalls();
+						//newBall(color=b, duration=gameWorld.balls[b].dur, 
+						//	 rate=gameWorld.balls[b].spawnRate);
+					}
+				}
+			}
+			
+		}	
+		
+		
+		// Update a new Frame of the game
+		function update()
+		{
+			if(gameWorld.paused){ return; }
+
+			// Clear the Screen
+			ctx.clearRect(0, 0, c.width, c.height);
+		
+			// ** Experimental Screen Clearing of paddle only
+			var x1 = gameWorld.flipper.x;
+			var y1 = gameWorld.flipper.y;
+			var x2 = x1 + gameWorld.flipper.length * Math.cos( gameWorld.flipper.direction )
+			var y2 = y1 + gameWorld.flipper.length * Math.sin( gameWorld.flipper.direction )
+
+			// Draw the Balls
+			ctx.lineWidth = 0.01;
+			
+			for (b in gameWorld.balls)
+			{
+				// Alias to specific ball 	
+				ball = gameWorld.balls[b];
+
+				ctx.beginPath();	
+				ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI);
+				ctx.fillStyle = COLORS[b];
+
+				if(ball.dur) 
+				{
+					ctx.stroke();
+					ctx.fill();
+				}
+			}
+
+
+			// Draw Flipper
+			ctx.lineWidth = 2;
+
+			ctx.beginPath();
+			ctx.moveTo(x1,y1);
+			ctx.lineTo(x2,y2);
+			ctx.stroke();
+		
+			// Check for Other Game Events
+			checkCollision(x1,y1,x2,y2);
+			checkBalls();
+			
+			// Update Direction	
+			gameWorld.flipper.direction += gameWorld.flipper.velocity * SPEED_UNIT;
+
+			// Adjust Speed to keep it within a range
+			gameWorld.flipper.direction %= 2 * Math.PI;
+
+			
+			
+		}
+			
+		function checkCollision(x1,y1,x2,y2)
+		{
+			//Check Collision with Walls
+			if ( x2 <= 0 || x2 >= c.width || y2 <= 0 || y2 >= c.height )
+			{
+				alert("Game Over\nFinal Score: " + gameWorld.flipper.score);
+				
+				// Reset Game
+				initGame();
+			}
+		
+			// Check Collision with Balls
+			for ( b in gameWorld.balls)
+			{
+				ball = gameWorld.balls[b];
+				if ( ball.x <= Math.max(x1, x2) && ball.x >= Math.min(x1,x2) &&
+					ball.y <= Math.max(y1, y2) && ball.y >= Math.min(y1,y2))
+				{
+					// Update the Flipper Bar Size
+					gameWorld.flipper.length += Math.sign(gameWorld.flipper.length) * 
+							(Math.pow(2, 2 + Math.floor(1 + Math.log10( 
+							Math.abs(gameWorld.flipper.length))/4)));
+
+					
+					// Update the Flipper Bar Speed
+					gameWorld.flipper.velocity *= 0.94;
+
+					//Update the Flipper Score
+					gameWorld.flipper.score += 10;
+					
+					// Respawn the Ball
+					initBalls();
+
+				}
+				
+			}
+				
+			updateHTML();
+			
+		}
+
+		
+		
+		// Set up Update on Timer
+		setInterval(update, 15);
+
+		// Set Key Bindings For desktop
+		window.addEventListener('keypress', keyHandler);
+		
+		//Start Initialization of Everything
+		initGame();		
+	
+	</script>
+
+</body>
+
+
+</html>
