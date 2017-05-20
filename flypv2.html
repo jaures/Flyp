@@ -189,6 +189,9 @@
 		function pause()
 		{
 			gameWorld.paused ^= 1;
+			
+			ctx.font = '48px serif';
+			ctx.fillText('PAUSED', c.width/4, c.height/2, c.width/2);
 		}
 		
 		// Initialize the Game
